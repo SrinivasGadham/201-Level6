@@ -11,6 +11,10 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
 
+    static getTodos() {
+      return this.findAll();
+    }
+
     static addTodo({ title, dueDate }) {
       return this.create({ title: title, dueDate: dueDate, completed: false });
     }
