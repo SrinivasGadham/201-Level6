@@ -74,8 +74,16 @@ module.exports = (sequelize, DataTypes) => {
       return this.create({ title: title, dueDate: dueDate, completed: false });
     }
 
-    markAsCompleted() {
-      return this.update({ completed: true });
+    static async remove(id) {
+      return this.destroy({
+        where: {
+          id,
+        },
+      });
+    }
+
+    setCompletionStatus(CurrentcompleteStatus) {
+      return this.update({ completed: !CurrentcompleteStatus });
     }
   }
   Todo.init(
