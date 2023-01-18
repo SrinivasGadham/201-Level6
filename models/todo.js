@@ -1,5 +1,5 @@
 "use strict";
-const { Model, Op, DataTypes } = require("sequelize");
+const { Model, Op } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Todo extends Model {
     /**
@@ -8,99 +8,89 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Todo.belongsTo(models.User, {
-        foreignKey: "userId",
-      });
+      // define association here
     }
 
-    static addTodo({ title, dueDate, userId }) {
-      return this.create({
-        title: title,
-        dueDate: dueDate,
-        completed: false,
-        userId,
-      });
+    static getTodos() {
+      return this.findAll();
     }
 
-    static async overdue(userId) {
+    static getOverdueTodos() {
+      const formattedDate = (d) => {
+        return d.toISOString().split("T")[0];
+      };
+
+      const dateToday = new Date();
+      const today = formattedDate(dateToday);
+
       return this.findAll({
         where: {
           dueDate: {
-            [Op.lt]: new Date(),
+            [Op.lt]: today,
           },
-          userId,
-          completed: false,
         },
       });
     }
 
-    static async dueLater(userId) {
+    static getDueTodayTodos() {
+      const formattedDate = (d) => {
+        return d.toISOString().split("T")[0];
+      };
+
+      const dateToday = new Date();
+      const today = formattedDate(dateToday);
+
       return this.findAll({
         where: {
           dueDate: {
-            [Op.gt]: new Date(),
+            [Op.eq]: today,
           },
-          userId,
-          completed: false,
         },
       });
     }
 
-    static async dueToday(userId) {
+    static getDueLaterTodos() {
+      const formattedDate = (d) => {
+        return d.toISOString().split("T")[0];
+      };
+
+      const dateToday = new Date();
+      const today = formattedDate(dateToday);
+
       return this.findAll({
         where: {
           dueDate: {
-            [Op.eq]: new Date(),
+            [Op.gt]: today,
           },
-          userId,
-          completed: false,
         },
       });
     }
 
-    static async completed(userId) {
-      return this.findAll({
-        where: {
-          completed: true,
-          userId,
-        },
-      });
+    static getTodosCount() {
+      return this.count();
     }
 
-    static async remove(id, userId) {
+    static addTodo({ title, dueDate }) {
+      return this.create({ title: title, dueDate: dueDate, completed: false });
+    }
+
+    static async remove(id) {
       return this.destroy({
         where: {
-          id: id,
-          userId,
+          id,
         },
       });
     }
 
-    setCompletionStatus(completed) {
-      return this.update({ completed });
+    setCompletionStatus(CurrentcompleteStatus) {
+      return this.update({ completed: !CurrentcompleteStatus });
     }
   }
   Todo.init(
     {
-      title: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-          notNull: true,
-          len: {
-            args: 5,
-            msg: "Todo title should be atleast 5 characters long",
-          },
-        },
-      },
-      dueDate: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
-      },
-      completed: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
+      title: DataTypes.STRING,
+      dueDate: DataTypes.DATEONLY,
+      completed: DataTypes.BOOLEAN,
     },
     {
       sequelize,
